@@ -42,3 +42,23 @@ def get_user(username):
 def search():
     disciplina = request.args.get('disciplina')
     return disciplina, 200
+
+##Atividade - 00
+@app.route('/v1/users', methods=['POST'])
+def create_user_v1():
+    data = request.get_json()
+    usuario_encontrado = col_users.find_one({'username' : data['username']})
+    if not usuario_encontrado:
+        col_users.insert_one(data)
+        return 'usuario ' + data['username'] + ' criado.', 201
+    else : 
+        return 'usuario '+ data['username'] + ' já existente.', 203
+
+##Atividade - 01 
+@app.route('/v1/users/<username>', methods=['GET'])
+def get_user_v1(username):
+    usuario_encontrado = col_users.find_one({'username' : username})
+    if usuario_encontrado:
+        return json_util.dumps(usuario_encontrado), 200
+    else : 
+        return 'usuario '+ data['username'] + ' não encontrado', 404

@@ -1,31 +1,274 @@
 {
-	"variables": [],
-	"info": {
-		"name": "mobquestions",
-		"_postman_id": "fe003022-590b-4a44-9676-afa1b56f53b7",
-		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
-	},
-	"item": [
+	"id": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+	"name": "mobquestions",
+	"description": "",
+	"order": [
+		"c2b18a17-cab5-ed64-55bb-c20e4bce0bed",
+		"ffc60c45-9025-263e-a564-744708d4043f",
+		"4b2107f6-7bbd-93c6-f83d-4ffa12556b54",
+		"a3777f85-b86d-9ad9-71ff-1b8ac4aab852",
+		"f7be74eb-6377-1646-7f33-369305114f12",
+		"89c26a38-33bb-0069-1038-65a84db26c39",
+		"b1c8c4af-9306-7e7e-204d-301c8e977c09",
+		"42688fc4-a82a-4c91-1e8d-7c2a42b77d4b",
+		"6632d89b-340d-0268-0cdc-9ad6935f3f25"
+	],
+	"folders": [],
+	"folders_order": [],
+	"timestamp": 0,
+	"owner": "4537055",
+	"public": false,
+	"requests": [
 		{
-			"name": "create user",
-			"request": {
-				"url": "localhost:8088/user",
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\"username\": \"schulaz\", \"password\": \"a123\"}\n"
+			"id": "42688fc4-a82a-4c91-1e8d-7c2a42b77d4b",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/authenticate",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528764831760,
+			"name": "02 - Authenticate User (User not valid)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"mark\", \"password\" : \"a123\"}"
+		},
+		{
+			"id": "4b2107f6-7bbd-93c6-f83d-4ffa12556b54",
+			"headers": "",
+			"headerData": [],
+			"url": "localhost:8088/v1/users/marke",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "GET",
+			"data": null,
+			"dataMode": "params",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528759428480,
+			"name": "01 - Find User (Not exists user)",
+			"description": "",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": []
+		},
+		{
+			"id": "6632d89b-340d-0268-0cdc-9ad6935f3f25",
+			"headers": "Content-Type: application/json\nusername: mark\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
 				},
-				"description": "cria um usuário na coleção users"
-			},
-			"response": []
+				{
+					"key": "username",
+					"value": "mark",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/users/update/",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528771506167,
+			"name": "03 - Update User",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"mark\", \"password\" : \"a123\"}"
+		},
+		{
+			"id": "89c26a38-33bb-0069-1038-65a84db26c39",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/authenticate",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528761039956,
+			"name": "02 - Authenticate User (Empty password)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"mark\"}\n"
+		},
+		{
+			"id": "a3777f85-b86d-9ad9-71ff-1b8ac4aab852",
+			"headers": "",
+			"headerData": [],
+			"url": "localhost:8088/v1/users/mark",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "GET",
+			"data": null,
+			"dataMode": "params",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528760647411,
+			"name": "01 - Find User (Exists user)",
+			"description": "",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": []
+		},
+		{
+			"id": "b1c8c4af-9306-7e7e-204d-301c8e977c09",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/authenticate",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528761345704,
+			"name": "02 - Authenticate User (Empty user)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"mark\"}\n"
+		},
+		{
+			"id": "c2b18a17-cab5-ed64-55bb-c20e4bce0bed",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/users",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528759398649,
+			"name": "00 - Create User (Not exists user)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"teste\", \"password\": \"a123\", \"email\": \"teste@knopfler.com\", \"name\": \"Teste\", \"phones\": [\"3333-2222\", \"2222-3333\"]}\n"
+		},
+		{
+			"id": "f7be74eb-6377-1646-7f33-369305114f12",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/authenticate",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528760930330,
+			"name": "02 - Authenticate User (Empty user and password)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{}"
+		},
+		{
+			"id": "ffc60c45-9025-263e-a564-744708d4043f",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:8088/v1/users",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1528759376377,
+			"name": "00 - Create User (Exists user)",
+			"description": "cria um usuário na coleção users",
+			"collectionId": "6a09f41c-10f4-4b0b-4a62-7a122e5ac9f7",
+			"responses": [],
+			"rawModeData": "{\"username\": \"mark\", \"password\": \"a123\", \"email\": \"mark@knopfler.com\", \"name\": \"Mark\", \"phones\": [\"3333-2222\", \"2222-3333\"]}\n"
 		}
 	]
 }

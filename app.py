@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify, redirect, g
 from flask_pymongo import PyMongo
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,8 +6,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
 
 from config import MONGO_URI
-
+from auth import *
 from bson.objectid import ObjectId
+
+import os
+import redis
+
+if os.getenv('REDIS_URL'):
+    rcache = redis.from_url(os.getenv('REDIS_URL'))
+else:
+    rcache = None
+
+
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = MONGO_URI

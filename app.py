@@ -130,16 +130,20 @@ def insert_comment_question_v1(question_id):
             return 'Comentário inserido com sucesso', 201
 
 ##Atividade - 07
-@app.route('/v1/questions/search/<question_id>', methods=['POST'])
-def insert_comment_question_v1(question_id):
-    data = request.get_json()
-    if not question_id or not request or 'username' not in data or 'message' not in data:
-        return 'Dados não informados e/ou não encontrados para atualização', 401
+@app.route('/v1/questions/search', methods=['GET'])
+def search_question_v1():
+    disciplina = request.args.get('disciplina')
+    ano = request.args.get('ano')
+
+    if not disciplina and not ano:
+        return 'Dados enviados estão inválidos', 400
     else:
-        usuario_encontrado = col_users.find_one({"username" : data['username'] })
-        questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
-        if not usuario_encontrado or not questao_encontrada:
-            return 'Usuário e/ou questão não encontrados', 403
+        where = {}
+        where['disciplina'] = disciplina
+        where['ano'] = ano
+        print(where)
+        questions_encontradas = col_questions.find(where)
+        if questions_encontradas:
+            return json_util.dumps(list(questions_encontradas)), 200
         else:
-            col_questions.update({'_id' : ObjectId(question_id)}, {'$set': {'comentarios' : data}})
-            return 'Comentário inserido com sucesso', 201
+            return 'Dados não encontrados', 404

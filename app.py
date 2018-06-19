@@ -7,6 +7,8 @@ from bson import json_util
 
 from config import MONGO_URI
 
+from bson.objectid import ObjectId
+
 app = Flask(__name__)
 app.config['MONGO_URI'] = MONGO_URI
 app.config['DEBUG'] = True
@@ -71,31 +73,73 @@ def authenticate_user_v1():
     if not request or 'username' not in data or 'password' not in data:
         return 'dados não informados', 401
     else:
-        usuario_encontrado = col_users.find_one({"username" : data['username'] }, {"_id" : 0,"password" : 1})
-        for key, value in usuario_encontrado.items():
-            password = value
-        if not usuario_encontrado or not check_password_hash(password, data['password']):            
-            return 'usuario ' + data['username'] + ' e/ou senha não encontrado.', 403
-        else : 
+        usuario_encontrado = col_users.find_one({"username" : data['username']})
+        if usuario_encontrado and check_password_hash(usuario_encontrado['password'], data['password']):
             return 'usuario e senha válidos.', 200
+        else:            
+            return 'usuario ' + data['username'] + ' e/ou senha não encontrado.', 403
 
 ##Atividade - 03
 @app.route('/v1/users/update', methods=['POST'])
 def update_user_v1():
     data = request.get_json()
-    username = request.args.get('username')
-    print(username)
+    if not request or 'username' not in data or 'email' not in data or 'phones' not in data:
+        return 'Dados não informados e/ou não encontrados para atualização', 401
+    else:
+        usuario_encontrado = col_users.find_one({"username" : data['username'] })
+        if usuario_encontrado:
+            col_users.update({'username' : data['username']}, {'$set':{'email': data['email'], 'phones' : data['phones']}})
+            return 'Dados atualizados com sucesso', 201
+        else:
+            return 'Usuário não encontrado', 403
 
-    return 'teste', 200
-    # if not request or 'username' not in data or 'password' not in data:
-    #     return 'dados não informados', 401
-    # else:
-    #     print(data['password'])
-    #     usuario_encontrado = col_users.find_one({"username" : data['username'] }, {"_id" : 0,"password" : 1})
-    #     print(json_util.dumps(usuario_encontrado))
-    #     for key, value in usuario_encontrado.items():
-    #         password = value
-    #     if not usuario_encontrado or not check_password_hash(password, data['password']):            
-    #         return 'usuario ' + data['username'] + ' e/ou senha não encontrado.', 403
-    #     else : 
-    #         return 'usuario e senha válidos.', 200
+##Atividade - 04
+@app.route('/v1/users/<username>', methods=['PATCH'])
+def update_password_user_v1(username):
+    data = request.get_json()
+    data['password'] = generate_password_hash(data['password'])
+    usuario_encontrado = col_users.find_one({'username' : username})
+    if usuario_encontrado:
+        col_users.update({'username' : username}, {'$set':{'password': data['password']}})
+        return 'usuario ' + username + ' senha definida com sucesso.', 201
+    else : 
+        return 'usuario '+ username + ' não encontrado para redefinição de senha', 404
+
+##Atividade - 05 
+@app.route('/v1/questions/<question_id>', methods=['GET'])
+def get_questions_v1(question_id):
+    questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
+    if questao_encontrada:
+        return json_util.dumps(questao_encontrada), 200
+    else : 
+        return 'Questão '+ question_id + ' não encontrada', 404
+
+##Atividade - 06
+@app.route('/v1/questions/<question_id>', methods=['POST'])
+def insert_comment_question_v1(question_id):
+    data = request.get_json()
+    if not question_id or not request or 'username' not in data or 'message' not in data:
+        return 'Dados não informados e/ou não encontrados para atualização', 401
+    else:
+        usuario_encontrado = col_users.find_one({"username" : data['username'] })
+        questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
+        if not usuario_encontrado or not questao_encontrada:
+            return 'Usuário e/ou questão não encontrados', 403
+        else:
+            col_questions.update({'_id' : ObjectId(question_id)}, {'$set': {'comentarios' : data}})
+            return 'Comentário inserido com sucesso', 201
+
+##Atividade - 07
+@app.route('/v1/questions/search/<question_id>', methods=['POST'])
+def insert_comment_question_v1(question_id):
+    data = request.get_json()
+    if not question_id or not request or 'username' not in data or 'message' not in data:
+        return 'Dados não informados e/ou não encontrados para atualização', 401
+    else:
+        usuario_encontrado = col_users.find_one({"username" : data['username'] })
+        questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
+        if not usuario_encontrado or not questao_encontrada:
+            return 'Usuário e/ou questão não encontrados', 403
+        else:
+            col_questions.update({'_id' : ObjectId(question_id)}, {'$set': {'comentarios' : data}})
+            return 'Comentário inserido com sucesso', 201

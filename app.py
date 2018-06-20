@@ -149,11 +149,13 @@ def search_question_v1():
         return 'Dados enviados estão inválidos', 400
     else:
         where = {}
-        where['disciplina'] = disciplina
-        where['ano'] = ano
+        where['disciplina'] = int(disciplina)
+        where['ano'] = int(ano)
         print(where)
         questions_encontradas = col_questions.find(where)
         if questions_encontradas:
             return json_util.dumps(list(questions_encontradas)), 200
         else:
             return 'Dados não encontrados', 404
+
+##Atividade - 08

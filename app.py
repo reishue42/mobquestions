@@ -55,6 +55,72 @@ def search():
     disciplina = request.args.get('disciplina')
     return disciplina, 200
 
+def authenticate(username, password):
+    user = col_users.find_one({'username': username})
+    if user and check_password_hash(user['password'], password):
+        return user
+    else:
+        return None
+
+@app.route('/signin', methods=['POST'])
+def signin():
+    data = request.get_json()
+    user = authenticate(data['username'], data['password'])
+    if user:
+        token_payload = {'username': user['username']}
+        access_token = create_access_token(token_payload)
+        refresh_token = create_refresh_token(token_payload)
+        col_tokens.insert_one({'value': refresh_token})
+        return jsonify({'access_token': access_token, 
+                        'refresh_token': refresh_token})
+    else:
+        return "Unauthorized", 401
+
+@app.route('/', methods=['GET'])
+@jwt_required
+def index():
+    res = col_users.find({})
+    return json_util.dumps(list(res)), 200
+
+@app.route('/cached_example', methods=['GET'])
+def questao_mais_legal_cacheada():    
+    if rcache and rcache.get('questao_legal'):
+        return rcache.get('questao_legal'), 200
+    else:
+        question = col_questions.find({'id': 'bc3b3701-b7'})
+        if rcache:
+            rcache.set('questao_legal', json_util.dumps(question))
+    return json_util.dumps(question), 200
+
+@app.route('/not_cached_example', methods=['GET'])
+def questao_mais_legal():    
+    question = col_questions.find({'id': 'bc3b3701-b7'})
+    return json_util.dumps(question), 200
+
+
+@app.route('/refresh_token', methods=['GET'])
+@jwt_refresh_required
+def refresh_token():    
+    token = col_tokens.find_one({'value': g.token})
+    if token:
+        col_tokens.delete_one({'value': g.token})
+        token_payload = {'username': g.parsed_token['username']}
+        access_token = create_access_token(token_payload)
+        refresh_token = create_refresh_token(token_payload)
+        col_tokens.insert_one({'value': refresh_token})
+        return json_util.dumps({'access_token': access_token, 
+                                'refresh_token': refresh_token}), 200
+    else:
+        return "Unauthorized", 401
+
+
+# rota para visualizar o conteudo do payload encriptado no token.
+@app.route('/token', methods=['GET'])
+@jwt_required
+def token():    
+    return json_util.dumps(g.parsed_token), 200
+
+
 ##Atividade - 00
 @app.route('/v1/users', methods=['POST'])
 def create_user_v1():
@@ -91,6 +157,7 @@ def authenticate_user_v1():
 
 ##Atividade - 03
 @app.route('/v1/users/update', methods=['POST'])
+@jwt_required
 def update_user_v1():
     data = request.get_json()
     if not request or 'username' not in data or 'email' not in data or 'phones' not in data:
@@ -126,6 +193,7 @@ def get_questions_v1(question_id):
 
 ##Atividade - 06
 @app.route('/v1/questions/<question_id>', methods=['POST'])
+@jwt_required
 def insert_comment_question_v1(question_id):
     data = request.get_json()
     if not question_id or not request or 'username' not in data or 'message' not in data:
@@ -159,3 +227,5 @@ def search_question_v1():
             return 'Dados não encontrados', 404
 
 ##Atividade - 08
+##Requerer token válido da atividade 03 e 06
+

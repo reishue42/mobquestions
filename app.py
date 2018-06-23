@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify, redirect, g
 from flask_pymongo import PyMongo
-
+ 
 from werkzeug.security import generate_password_hash, check_password_hash
-
+ 
 from bson import json_util
-
+ 
 from config import MONGO_URI
 from auth import *
-from bson.objectid import ObjectId
 
 import os
 import redis
@@ -30,11 +29,8 @@ mongo = PyMongo(app)
 
 col_users = mongo.db.users
 col_questions = mongo.db.questions
+col_tokens = mongo.db.tokens        # refresh tokens
 
-@app.route('/', methods=['GET'])
-def index():
-    res = col_users.find({})
-    return json_util.dumps(list(res)), 201
 
 @app.route('/users', methods=['POST'])
 def create_user():
@@ -185,7 +181,7 @@ def update_password_user_v1(username):
 ##Atividade - 05 
 @app.route('/v1/questions/<question_id>', methods=['GET'])
 def get_questions_v1(question_id):
-    questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
+    questao_encontrada = col_questions.find_one({'id' : question_id})
     if questao_encontrada:
         return json_util.dumps(questao_encontrada), 200
     else : 
@@ -196,15 +192,16 @@ def get_questions_v1(question_id):
 @jwt_required
 def insert_comment_question_v1(question_id):
     data = request.get_json()
+    print(col_questions.find_one())
     if not question_id or not request or 'username' not in data or 'message' not in data:
         return 'Dados não informados e/ou não encontrados para atualização', 401
     else:
         usuario_encontrado = col_users.find_one({"username" : data['username'] })
-        questao_encontrada = col_questions.find_one({'_id' : ObjectId(question_id)})
+        questao_encontrada = col_questions.find_one({'id' : question_id})
         if not usuario_encontrado or not questao_encontrada:
             return 'Usuário e/ou questão não encontrados', 403
         else:
-            col_questions.update({'_id' : ObjectId(question_id)}, {'$set': {'comentarios' : data}})
+            col_questions.update({'id' : question_id}, {'$set': {'comentarios' : data}})
             return 'Comentário inserido com sucesso', 201
 
 ##Atividade - 07
@@ -219,7 +216,6 @@ def search_question_v1():
         where = {}
         where['disciplina'] = int(disciplina)
         where['ano'] = int(ano)
-        print(where)
         questions_encontradas = col_questions.find(where)
         if questions_encontradas:
             return json_util.dumps(list(questions_encontradas)), 200
@@ -230,3 +226,47 @@ def search_question_v1():
 ##Requerer token válido da atividade 03 e 06
 
 ##Atividade - 09
+@app.route('/v1/questions/<question_id>/answer', methods=['POST'])
+@jwt_required
+def answer_question_v1(question_id):
+    data = request.get_json()
+    if not question_id or not request or 'resposta' not in data or 'username' not in data:
+        return 'Dados não informados e/ou não encontrados', 401
+    else:
+        questao_encontrada = col_questions.find_one({'id' : question_id})
+        if not questao_encontrada:
+            return 'Questão não encontrada', 403
+        else:
+            usuario_encontrado = col_users.find_one({'username' : data['username']})
+            if usuario_encontrado:
+                answerUser = {}
+                answerUser['id'] = question_id
+                answerUser['answer'] = data['resposta']
+                if not usuario_encontrado['questoes']:
+                    col_users.update({'username' : data['username']}, {'$set': {'questoes' : [answerUser]}})
+                else:
+                    col_users.update({'username' : data['username']}, {'$push': {'questoes' : answerUser}})
+                if questao_encontrada['resposta'] == data['resposta']:
+                    return 'Resposta correta', 201
+                else:
+                    return 'Resposta incorreta', 201
+            else: 
+                return 'Usuário não encontrado', 403
+
+##Atividade - 10
+@app.route('/v1/questions/<question_id>/answer2', methods=['POST'])
+@jwt_required
+def get_answer_question_v1(question_id):
+    data = request.get_json()
+    if not question_id or not request or 'resposta' not in data:
+        return 'Dados não informados e/ou não encontrados', 401
+    else:
+        questao_encontrada = col_questions.find_one({'id' : question_id})
+        if not questao_encontrada:
+            return 'Questão não encontrada', 403
+        else:
+            if questao_encontrada['resposta'] == data['resposta']:
+                return 'Resposta correta', 201
+            else:
+                return 'Resposta incorreta', 201
+

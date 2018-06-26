@@ -227,7 +227,7 @@ def get_questoes():
 
 ##Atividade - 09
 @app.route('/v1/questions/<question_id>/answer', methods=['POST'])
-##@jwt_required
+@jwt_required
 def responder_questao(question_id):
     data = request.get_json()
     if not question_id or not request or 'resposta' not in data or 'username' not in data:
@@ -268,7 +268,7 @@ def responder_questao(question_id):
 
 ##Atividade - 10
 @app.route('/v1/questions/answers', methods=['GET'])
-##@jwt_required
+@jwt_required
 def get_respostas_questoes():
     questoes_encontradas = col_users.find({'questoes': {'$ne' : None} },{'_id':0,'questoes' : 1})
     
@@ -285,7 +285,7 @@ def get_respostas_questoes():
 
 ##Atividade - 11
 @app.route('/v1/featured_questions', methods=['POST'])
-##@jwt_required
+@jwt_required
 def questoes_mais_respondidas():
     questions = col_questions.find({'contador_respostas_recebida': {'$ne' : None}, 'contador_respostas_recebida' : {'$gt' : 0} })
     print(json_util.dumps(list(questions)))
@@ -296,7 +296,7 @@ def questoes_mais_respondidas():
 
 ##Atividade - 12
 @app.route('/v1/featured_questions', methods=['GET'])
-##@jwt_required
+@jwt_required
 def get_questoes_mais_respondidas():
     if rcache and rcache.get('questao_mais_respondida'):
         return rcache.get('questao_mais_respondida'), 200

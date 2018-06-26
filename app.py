@@ -119,7 +119,7 @@ def token():
 
 ##Atividade - 00
 @app.route('/v1/users', methods=['POST'])
-def create_user_v1():
+def criar_usuario():
     data = request.get_json()
     data['password'] = generate_password_hash(data['password'])
     usuario_encontrado = col_users.find_one({'username' : data['username']})
@@ -131,7 +131,7 @@ def create_user_v1():
 
 ##Atividade - 01 
 @app.route('/v1/users/<username>', methods=['GET'])
-def get_user_v1(username):
+def get_usuario(username):
     usuario_encontrado = col_users.find_one({'username' : username})
     if usuario_encontrado:
         return json_util.dumps(usuario_encontrado), 200
@@ -140,7 +140,7 @@ def get_user_v1(username):
 
 ##Atividade - 02
 @app.route('/v1/authenticate', methods=['POST'])
-def authenticate_user_v1():
+def autenticar_usuario():
     data = request.get_json()
     if not request or 'username' not in data or 'password' not in data:
         return 'dados não informados', 401
@@ -154,7 +154,7 @@ def authenticate_user_v1():
 ##Atividade - 03
 @app.route('/v1/users/update', methods=['POST'])
 @jwt_required
-def update_user_v1():
+def atualizar_usuario():
     data = request.get_json()
     if not request or 'username' not in data or 'email' not in data or 'phones' not in data:
         return 'Dados não informados e/ou não encontrados para atualização', 401
@@ -168,7 +168,7 @@ def update_user_v1():
 
 ##Atividade - 04
 @app.route('/v1/users/<username>', methods=['PATCH'])
-def update_password_user_v1(username):
+def redefinir_senha_usuario(username):
     data = request.get_json()
     data['password'] = generate_password_hash(data['password'])
     usuario_encontrado = col_users.find_one({'username' : username})
@@ -180,7 +180,7 @@ def update_password_user_v1(username):
 
 ##Atividade - 05 
 @app.route('/v1/questions/<question_id>', methods=['GET'])
-def get_questions_v1(question_id):
+def get_questao(question_id):
     questao_encontrada = col_questions.find_one({'id' : question_id})
     if questao_encontrada:
         return json_util.dumps(questao_encontrada), 200
@@ -190,7 +190,7 @@ def get_questions_v1(question_id):
 ##Atividade - 06
 @app.route('/v1/questions/<question_id>', methods=['POST'])
 @jwt_required
-def insert_comment_question_v1(question_id):
+def inserir_comentario_questao(question_id):
     data = request.get_json()
     print(col_questions.find_one())
     if not question_id or not request or 'username' not in data or 'message' not in data:
@@ -206,7 +206,7 @@ def insert_comment_question_v1(question_id):
 
 ##Atividade - 07
 @app.route('/v1/questions/search', methods=['GET'])
-def search_question_v1():
+def get_questoes():
     disciplina = request.args.get('disciplina')
     ano = request.args.get('ano')
 
@@ -227,14 +227,14 @@ def search_question_v1():
 
 ##Atividade - 09
 @app.route('/v1/questions/<question_id>/answer', methods=['POST'])
-@jwt_required
-def answer_question_v1(question_id):
+##@jwt_required
+def responder_questao(question_id):
     data = request.get_json()
     if not question_id or not request or 'resposta' not in data or 'username' not in data:
         return 'Dados não informados e/ou não encontrados', 401
     else:
-        questao_encontrada = col_questions.find_one({'id' : question_id})
-        if not questao_encontrada:
+        questao = col_questions.find_one({'id' : question_id})
+        if not questao:
             return 'Questão não encontrada', 403
         else:
             usuario_encontrado = col_users.find_one({'username' : data['username']})
@@ -242,11 +242,24 @@ def answer_question_v1(question_id):
                 answerUser = {}
                 answerUser['id'] = question_id
                 answerUser['answer'] = data['resposta']
-                if not usuario_encontrado['questoes']:
+                if 'questoes' not in usuario_encontrado:
                     col_users.update({'username' : data['username']}, {'$set': {'questoes' : [answerUser]}})
                 else:
                     col_users.update({'username' : data['username']}, {'$push': {'questoes' : answerUser}})
-                if questao_encontrada['resposta'] == data['resposta']:
+
+                questoes_encontradas = col_users.find({'questoes': {'$ne' : None} },{'_id':0,'questoes.id' : 1})
+                lista = []
+                contador = int(0)
+                if questoes_encontradas:
+                    for x in questoes_encontradas:
+                        if len(x) > 0:     
+                            for i in x['questoes']:
+                                if i['id'] == question_id:
+                                    contador = contador + 1
+                col_questions.update({'id' : question_id}, {'$set': {'contador_respostas_recebida' : contador}})
+
+
+                if questao['resposta'] == data['resposta']:
                     return 'Resposta correta', 201
                 else:
                     return 'Resposta incorreta', 201
@@ -254,19 +267,38 @@ def answer_question_v1(question_id):
                 return 'Usuário não encontrado', 403
 
 ##Atividade - 10
-@app.route('/v1/questions/<question_id>/answer2', methods=['POST'])
-@jwt_required
-def get_answer_question_v1(question_id):
-    data = request.get_json()
-    if not question_id or not request or 'resposta' not in data:
-        return 'Dados não informados e/ou não encontrados', 401
-    else:
-        questao_encontrada = col_questions.find_one({'id' : question_id})
-        if not questao_encontrada:
-            return 'Questão não encontrada', 403
-        else:
-            if questao_encontrada['resposta'] == data['resposta']:
-                return 'Resposta correta', 201
-            else:
-                return 'Resposta incorreta', 201
+@app.route('/v1/questions/answers', methods=['GET'])
+##@jwt_required
+def get_respostas_questoes():
+    questoes_encontradas = col_users.find({'questoes': {'$ne' : None} },{'_id':0,'questoes' : 1})
+    
+    lista = []
+    if questoes_encontradas:
+        for x in questoes_encontradas:
+            if len(x) > 0:     
+                for i in x['questoes']:
+                    lista.append(i)
+    if len(lista) == 0:
+        return 'Nenhuma resposta encontrada', 404
+
+    return json_util.dumps(list(lista)), 201
+
+##Atividade - 11
+@app.route('/v1/featured_questions', methods=['POST'])
+##@jwt_required
+def questoes_mais_respondidas():
+    questions = col_questions.find({'contador_respostas_recebida': {'$ne' : None}, 'contador_respostas_recebida' : {'$gt' : 0} })
+    print(json_util.dumps(list(questions)))
+    if questions and rcache:
+        rcache.set('questao_mais_respondida', json_util.dumps(list(questions)))
+        return 'Dados atualizados', 200
+    return 'Dados não atualizados', 403
+
+##Atividade - 12
+@app.route('/v1/featured_questions', methods=['GET'])
+##@jwt_required
+def get_questoes_mais_respondidas():
+    if rcache and rcache.get('questao_mais_respondida'):
+        return rcache.get('questao_mais_respondida'), 200
+    return 'Não possui dados em cache',403
 

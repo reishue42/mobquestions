@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
  
 from bson import json_util
  
-from config import MONGO_URI
+from config import MONGO_URI, MONGO_URI_TESTS
 from auth import *
 
 import os
@@ -16,15 +16,19 @@ if os.getenv('REDIS_URL'):
 else:
     rcache = None
 
+def create_app(testing = False):
+    app = Flask(__name__)
+    if os.getenv('FLASK_TESTING') and os.getenv('FLASK_TESTING')=='1':
+        app.config['MONGO_URI'] = MONGO_URI_TESTS
+    else:
+        app.config['MONGO_URI'] = MONGO_URI
+    app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    app_context = app.app_context()
+    app_context.push()        
+    return app
 
-
-app = Flask(__name__)
-app.config['MONGO_URI'] = MONGO_URI
-app.config['DEBUG'] = True
-
-app_context = app.app_context()
-app_context.push()
-
+mongo = None
+app = create_app()
 mongo = PyMongo(app)
 
 col_users = mongo.db.users
@@ -60,6 +64,20 @@ def authenticate(username, password):
 
 @app.route('/signin', methods=['POST'])
 def signin():
+    data = request.get_json()
+    user = authenticate(data['username'], data['password'])
+    if user:
+        token_payload = {'username': user['username']}
+        access_token = create_access_token(token_payload)
+        refresh_token = create_refresh_token(token_payload)
+        col_tokens.insert_one({'value': refresh_token})
+        return jsonify({'access_token': access_token, 
+                        'refresh_token': refresh_token})
+    else:
+        return "Unauthorized", 401
+
+@app.route('/v1/signin', methods=['POST'])
+def signin_v1():
     data = request.get_json()
     user = authenticate(data['username'], data['password'])
     if user:
@@ -121,6 +139,7 @@ def token():
 @app.route('/v1/users', methods=['POST'])
 def criar_usuario():
     data = request.get_json()
+    print(data)
     data['password'] = generate_password_hash(data['password'])
     usuario_encontrado = col_users.find_one({'username' : data['username']})
     if not usuario_encontrado:
